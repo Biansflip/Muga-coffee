@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Muga Coffee — Pesan via QR Code</title>
+<meta name="description" content="Muga Coffee — Sistem pemesanan cafe berbasis QR Code. Scan, pesan, pantau status, bayar." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ===== TOP DEMO BAR ===== -->
+<header class="demo-bar">
+  <div class="demo-bar-inner">
+    <div class="brand"><span class="brand-logo">☕</span><div><strong>Muga Coffee</strong><small>Demo UI/UX · QR Code Ordering</small></div></div>
+    <div class="mode-switch" role="tablist" aria-label="Mode tampilan">
+      <button type="button" id="modeCustomerBtn" class="mode-btn active" onclick="setMode('customer')">👤 Pelanggan</button>
+      <button type="button" id="modeAdminBtn" class="mode-btn" onclick="setMode('admin')">🪑 Kasir / Admin</button>
+    </div>
+    <div class="demo-meja">Demo: <code>?meja=12</code> · <span class="meja-pill meja-pill-sm">Meja <b class="meja-num">12</b></span></div>
+  </div>
+</header>
+
+<!-- ================= CUSTOMER APP ================= -->
+<div id="customerApp" class="customer-app">
+
+  <!-- Header pelanggan -->
+  <header class="cust-header">
+    <div class="cust-header-inner">
+      <div class="cust-brand">
+        <div class="logo">M</div>
+        <div>
+          <h1>Selamat Datang!</h1>
+          <p>Anda sedang memesan dari <b class="meja-inline">Meja <span class="meja-num">12</span></b></p>
+        </div>
+      </div>
+      <div class="cust-header-actions">
+        <span class="meja-pill">📍 Meja <b class="meja-num">12</b></span>
+        <button type="button" class="icon-btn" aria-label="Keranjang" onclick="showView('cart')">🛒<span id="cartCount" class="cart-badge" hidden>0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="cust-main">
+
+    <!-- 1. QR SCAN / ENTRY POINT -->
+    <section id="scanView" class="view active" aria-label="Scan QR">
+      <div class="scan-card">
+        <div class="qr-illustration" aria-hidden="true"><div class="qr-grid"><span></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span></span><span></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span></span><span></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span></span><span></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span></span><span></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span></span><span class="on"></span><span></span><span></span><span class="on"></span></div><div class="qr-scanline"></div></div>
+        <h2>Scan QR di Meja Anda</h2>
+        <p class="muted">Website langsung terbuka dan meja terdeteksi otomatis — <b>tanpa login, tanpa registrasi</b>.</p>
+        <div class="scan-status"><span class="dot dot-green"></span> Meja terdeteksi: <b>Meja <span class="meja-num">12</span></b> · QR Meja 12 → Meja 12</div>
+        <label class="field-label" for="demoMejaInput">Coba nomor meja lain (demo)</label>
+        <div class="scan-form">
+          <input id="demoMejaInput" type="number" min="1" max="30" value="12" />
+          <button type="button" class="btn btn-primary" onclick="applyMeja()">Deteksi Meja</button>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="showView('menu')">Mulai Pesan →</button>
+        <button type="button" class="btn btn-ghost btn-block" onclick="showView('menu')">Lihat Menu Dulu (Demo)</button>
+        <div class="feature-pills"><span>✅ Tanpa Login</span><span>⚡ Langsung ke Meja</span><span>📦 Pantau Status</span><span>💳 Tunai / Digital</span></div>
+      </div>
+      <div class="info-card"><h3>Jam Operasional</h3><p>Senin–Jumat 09.00–22.00 · Sabtu–Minggu 08.00–23.00</p><p class="muted">Jl. Kenangan No. 12 · Wi-Fi gratis · Stop kontak di setiap meja</p></div>
+    </section>
+
+    <!-- 2. MENU CAFE -->
+    <section id="menuView" class="view" aria-label="Menu cafe">
+      <div class="promo-banner"><div><b>☕ Promo Hari Ini</b><p>Beli 1 Kopi Susu gratis 1 Es Teh — khusus pemesanan via QR.</p></div><span class="promo-tag">PROMO</span></div>
+      <div class="search-row"><span>🔍</span><input id="searchInput" type="search" placeholder="Cari menu… mis. kopi, pedas, nasi" oninput="renderMenus()" /></div>
+      <div id="catChips" class="chips" role="tablist"></div>
+      <div class="section-head"><h2>Menu</h2><span id="menuCount" class="muted"></span></div>
+      <div id="menuGrid" class="menu-grid"></div>
+      <div class="info-card">
+        <h3>Kenapa pesan lewat QR?</h3>
+        <div class="steps-mini"><span><b>1</b> Scan QR</span><span>→</span><span><b>2</b> Pilih Menu</span><span>→</span><span><b>3</b> Pesan</span><span>→</span><span><b>4</b> Pantau Status</span><span>→</span><span><b>5</b> Bayar</span></div>
+        <p class="muted">Tidak perlu mengisi nama, nomor meja, username, atau password. Nomor meja sudah diperoleh dari QR Code.</p>
+        <button type="button" class="btn btn-outline btn-block" onclick="showView('member')">Lihat Membership (Opsional)</button>
+      </div>
+    </section>
+
+    <!-- 3. KERANJANG -->
+    <section id="cartView" class="view" aria-label="Keranjang">
+      <h2 class="view-title">Keranjang Pesanan</h2>
+      <div class="meja-banner">📍 <b>Meja: <span class="meja-num">12</span></b> · Pesanan akan dikirim ke kasir untuk meja ini</div>
+      <div id="emptyCart" class="empty-state"><div class="empty-icon">🛒</div><h3>Keranjang masih kosong</h3><p class="muted">Yuk pilih menu favoritmu dulu.</p><button type="button" class="btn btn-primary" onclick="showView('menu')">Lihat Menu</button></div>
+      <div id="cartWrap" hidden>
+        <div id="cartList" class="cart-list"></div>
+        <div class="summary-card">
+          <div class="row"><span>Subtotal</span><b id="subtotal">Rp0</b></div>
+          <div class="row"><span>Biaya layanan (5%)</span><b id="serviceFee">Rp0</b></div>
+          <div class="row total"><span>Total pembayaran</span><b id="totalPay">Rp0</b></div>
+          <label class="field-label" for="globalNote">Catatan untuk kasir (opsional)</label>
+          <input id="globalNote" type="text" placeholder="Contoh: tidak pedas, pisahkan saus…" />
+          <button type="button" class="btn btn-primary btn-lg btn-block" onclick="openConfirm()">Pesan Sekarang</button>
+          <button type="button" class="btn btn-ghost btn-block" onclick="showView('menu')">+ Tambah Menu Lain</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. STATUS PESANAN + ANTRIAN -->
+    <section id="statusView" class="view" aria-label="Status pesanan">
+      <h2 class="view-title">Status Pesanan</h2>
+      <div id="noOrder" class="empty-state"><div class="empty-icon">📦</div><h3>Belum ada pesanan</h3><p class="muted">Setelah memesan, status pesananmu akan tampil di sini.</p><button type="button" class="btn btn-primary" onclick="showView('menu')">Pesan Sekarang</button></div>
+      <div id="orderWrap" hidden>
+        <div id="statusBanner" class="status-banner">✅ <span id="statusBannerText">Pesanan Diterima</span></div>
+        <div class="order-meta"><div><small>Nomor Pesanan</small><b id="orderNumber">Pesanan #0012</b></div><div><small>Meja</small><b>Meja <span class="meja-num">12</span></b></div><div><small>Estimasi</small><b id="statusEta">5–10 menit</b></div></div>
+        <ol id="statusTimeline" class="timeline"></ol>
+        <div class="summary-card"><h3>Detail Pesanan</h3><div id="statusItems"></div><div class="row total"><span>Total</span><b id="statusTotal">Rp0</b></div><p id="statusNote" class="muted"></p></div>
+        <div class="btn-stack"><button type="button" class="btn btn-primary btn-lg" onclick="showView('payment')">Bayar Sekarang 💳</button><button type="button" class="btn btn-outline" onclick="showView('menu')">+ Tambah Pesanan</button><button type="button" class="btn btn-ghost" onclick="simulateAdvance()">▶ Simulasi: Majukan Status (Demo)</button></div>
+        <p class="hint">Demo: tombol simulasi meniru update dari kasir (Diterima → Diproses → Siap → Diantar → Selesai).</p>
+      </div>
+    </section>
+
+    <!-- 6. PEMBAYARAN -->
+    <section id="paymentView" class="view" aria-label="Pembayaran">
+      <h2 class="view-title">Pembayaran</h2>
+      <div class="summary-card"><div class="row"><span>Pesanan</span><b id="payOrderInfo">#0012</b></div><div class="row"><span>Meja</span><b>Meja <span class="meja-num">12</span></b></div><div class="row total"><span>Total</span><b id="payTotal">Rp75.000</b></div></div>
+      <h3 class="sub-title">Pilih metode pembayaran</h3>
+      <div class="pay-methods" role="radiogroup">
+        <label class="pay-method"><input type="radio" name="pay" value="Tunai" checked /> <span class="pm-icon">💵</span><span><b>Tunai</b><small>Bayar di kasir</small></span></label>
+        <label class="pay-method"><input type="radio" name="pay" value="QRIS" /> <span class="pm-icon">📱</span><span><b>QRIS</b><small>Scan QR · semua e-wallet &amp; m-banking</small></span></label>
+        <label class="pay-method"><input type="radio" name="pay" value="E-Wallet" /> <span class="pm-icon">👛</span><span><b>E-Wallet</b><small>GoPay · OVO · DANA · ShopeePay</small></span></label>
+        <label class="pay-method"><input type="radio" name="pay" value="Transfer" /> <span class="pm-icon">🏦</span><span><b>Transfer Bank</b><small>Virtual account</small></span></label>
+      </div>
+      <div id="cashInfo" class="info-card"><h3>Instruksi Tunai</h3><p>Tunjukkan total pembayaran ini ke kasir. Status akan berubah menjadi <b>Menunggu Pembayaran</b> sampai kasir mengonfirmasi.</p></div>
+      <div id="digitalInfo" class="info-card" hidden><h3>Instruksi Digital</h3><p>Selesaikan pembayaran lewat payment gateway, lalu status transaksi otomatis diperbarui.</p><div class="qris-box">▦ QRIS Muga Coffee ▦<small>Demo gateway · bukan transaksi nyata</small></div></div>
+      <button type="button" id="payBtn" class="btn btn-primary btn-lg btn-block" onclick="processPayment(this)">Bayar Sekarang · <span id="payBtnTotal">Rp75.000</span></button>
+      <button type="button" class="btn btn-ghost btn-block" onclick="showView('status')">← Kembali ke Status</button>
+    </section>
+
+    <!-- 8. PEMBAYARAN BERHASIL -->
+    <section id="successView" class="view" aria-label="Pembayaran berhasil">
+      <div class="success-hero"><div class="success-check">✓</div><h2>Pembayaran Berhasil</h2><p class="muted">Terima kasih! Transaksi sudah tercatat di sistem.</p></div>
+      <div class="summary-card" id="successDetails"></div>
+      <div class="btn-stack"><button type="button" class="btn btn-primary btn-lg" onclick="showView('menu')">Kembali ke Menu</button><button type="button" class="btn btn-outline" onclick="showView('status')">Lihat Status Pesanan</button></div>
+    </section>
+
+    <!-- 10. MEMBERSHIP PELANGGAN -->
+    <section id="memberView" class="view" aria-label="Membership">
+      <h2 class="view-title">Membership</h2>
+      <div class="member-card"><div><small>MUGA MEMBER</small><h3 id="memberName">Tamu Muga</h3><p>Member Gold · bergabung opsional, tetap bisa pesan tanpa login</p></div><div class="member-points"><b id="memberPoints">1.250</b><small>Poin</small></div></div>
+      <div class="grid-2"><div class="mini-card"><b>🎁 3</b><small>Voucher aktif</small></div><div class="mini-card"><b>⭐ Gold</b><small>Status member</small></div><div class="mini-card"><b>12×</b><small>Transaksi</small></div><div class="mini-card"><b>Rp50rb</b><small>Reward siap tukar</small></div></div>
+      <div class="summary-card"><h3>Promo khusus member</h3><p>☕ Diskon 15% Kopi Susu setiap Senin · 🍰 Gratis dessert di ulang tahun · 🔥 Early access menu baru</p><button type="button" class="btn btn-outline btn-block" onclick="toast('Voucher & reward ditampilkan di demo ini ✨')">Lihat Reward &amp; Voucher</button></div>
+      <div class="summary-card"><h3>Riwayat transaksi</h3><div class="history-row"><span><b>#0012</b> · Meja 12</span><span>Rp75.000</span></div><div class="history-row"><span><b>#0098</b> · Meja 5</span><span>Rp52.000</span></div><div class="history-row"><span><b>#0074</b> · Meja 12</span><span>Rp40.000</span></div></div>
+      <button type="button" class="btn btn-primary btn-lg btn-block" onclick="toast('Membership bersifat opsional — pesanan tetap bisa dilanjutkan tanpa login 👍')">Gabung Member (Opsional)</button>
+      <p class="hint">Membership tidak menghalangi pemesanan. Pelanggan tetap dapat memesan tanpa login.</p>
+    </section>
+  </main>
+
+  <!-- Bottom navigation pelanggan -->
+  <nav class="bottom-nav" aria-label="Navigasi pelanggan">
+    <button type="button" class="nav-item active" data-nav="menu" onclick="showView('menu')">🏠<span>Menu</span></button>
+    <button type="button" class="nav-item" data-nav="cart" onclick="showView('cart')">🛒<span>Keranjang</span></button>
+    <button type="button" class="nav-item" data-nav="status" onclick="showView('status')">📦<span>Status</span></button>
+    <button type="button" class="nav-item" data-nav="member" onclick="showView('member')">⭐<span>Member</span></button>
+  </nav>
+
+  <!-- 7. AI CUSTOMER SERVICE -->
+  <button type="button" id="aiFab" class="ai-fab" aria-label="AI Customer Service" onclick="toggleAI()">💬</button>
+  <div id="aiPanel" class="ai-panel" hidden>
+    <header><div><b>Muga AI Assistant</b><small>Online · siap membantu</small></div><button type="button" class="icon-btn small" onclick="toggleAI()">✕</button></header>
+    <div id="aiMessages" class="ai-messages"><div class="ai-bubble ai">👋 Halo! Ada yang bisa saya bantu? Tanya soal menu, rekomendasi, harga, status pesanan, atau cara pembayaran.</div></div>
+    <div class="ai-quick"><button type="button" onclick="aiAsk('Menu apa yang cocok kalau saya suka makanan pedas?')">🌶️ Rekomendasi pedas</button><button type="button" onclick="aiAsk('Menu terlaris di Muga Coffee?')">🔥 Terlaris</button><button type="button" onclick="aiAsk('Bagaimana cara pembayaran?')">💳 Cara bayar</button><button type="button" onclick="aiAsk('Cek status pesanan saya')">📦 Status pesanan</button></div>
+    <form class="ai-form" onsubmit="return sendAI(event)"><input id="aiInput" type="text" placeholder="Tulis pertanyaan…" /><button type="submit" class="btn btn-primary">Kirim</button></form>
+  </div>
+</div>
+
+<!-- Detail menu modal (bottom sheet) -->
+<div id="detailModal" class="modal-overlay" hidden>
+  <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="detailName">
+    <div id="detailVisual" class="detail-visual">🍳</div>
+    <div class="modal-body">
+      <div class="row"><h2 id="detailName">Nasi Goreng Spesial</h2><button type="button" class="icon-btn small" onclick="closeDetail()">✕</button></div>
+      <p id="detailPrice" class="price">Rp25.000</p><p id="detailDesc" class="muted"></p>
+      <label class="field-label">Jumlah</label>
+      <div class="qty-row"><button type="button" class="qty-btn" onclick="changeDetailQty(-1)">−</button><b id="detailQty">1</b><button type="button" class="qty-btn" onclick="changeDetailQty(1)">+</button></div>
+      <label class="field-label" for="detailNote">Catatan pesanan</label>
+      <input id="detailNote" type="text" placeholder="Contoh: tidak pedas" />
+      <button type="button" class="btn btn-primary btn-lg btn-block" onclick="addFromDetail()">Tambah ke Keranjang</button>
+    </div>
+  </div>
+</div>
+
+<!-- Konfirmasi pesanan modal -->
+<div id="confirmModal" class="modal-overlay" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <h3>Pastikan pesanan Anda sudah benar.</h3><p id="confirmText" class="muted"></p>
+    <div class="btn-row"><button type="button" class="btn btn-outline" onclick="closeConfirm()">Kembali</button><button type="button" class="btn btn-primary" onclick="confirmOrder()">Konfirmasi Pesanan</button></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- ================= ADMIN / KASIR APP ================= -->
+<div id="adminApp" class="admin-app" hidden>
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><div class="logo">M</div><div><b>Muga Coffee</b><small>Kasir · Admin</small></div></div>
+    <nav class="admin-nav">
+      <button type="button" class="admin-link active" data-admin="dashboard" onclick="showAdmin('dashboard')">📊 Dashboard</button>
+      <button type="button" class="admin-link" data-admin="orders" onclick="showAdmin('orders')">🧾 Pesanan</button>
+      <button type="button" class="admin-link" data-admin="menu" onclick="showAdmin('menu')">🍽️ Menu</button>
+      <button type="button" class="admin-link" data-admin="payment" onclick="showAdmin('payment')">💳 Pembayaran</button>
+      <button type="button" class="admin-link" data-admin="report" onclick="showAdmin('report')">📈 Laporan</button>
+      <button type="button" class="admin-link" data-admin="member" onclick="showAdmin('member')">⭐ Membership</button>
+      <button type="button" class="admin-link" data-admin="ai" onclick="showAdmin('ai')">🤖 AI Customer Service</button>
+      <button type="button" class="admin-link" data-admin="settings" onclick="showAdmin('settings')">⚙️ Pengaturan</button>
+    </nav>
+    <button type="button" class="btn btn-outline btn-block" onclick="setMode('customer')">← Mode Pelanggan</button>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar"><div><h1 id="adminTitle">Dashboard</h1><p class="muted" id="adminDate"></p></div><div class="admin-top-actions"><span class="live-pill"><span class="dot dot-green"></span> Live · pesanan masuk realtime</span><span>🔔</span></div></header>
+
+    <!-- DASHBOARD -->
+    <section id="admin-dashboard" class="admin-page active">
+      <div class="stat-grid">
+        <div class="stat-card"><small>Pesanan Baru</small><b id="statNew">8</b><span class="trend up">↑ dari kemarin</span></div>
+        <div class="stat-card"><small>Diproses</small><b id="statProcess">5</b><span class="trend">sedang dibuat</span></div>
+        <div class="stat-card"><small>Siap</small><b id="statReady">3</b><span class="trend warn">menunggu diantar</span></div>
+        <div class="stat-card"><small>Selesai</small><b id="statDone">25</b><span class="trend up">hari ini</span></div>
+      </div>
+      <div class="admin-grid">
+        <div class="panel"><div class="panel-head"><h3>Pesanan Masuk (Live)</h3><button type="button" class="btn btn-outline btn-sm" onclick="showAdmin('orders')">Lihat Semua →</button></div><div id="recentOrders"></div></div>
+        <div class="panel"><h3>Menu Terlaris Hari Ini</h3><div class="top-menu-row"><span>1. Nasi Goreng Spesial</span><b>32×</b></div><div class="top-menu-row"><span>2. Kopi Susu Gula Aren</span><b>28×</b></div><div class="top-menu-row"><span>3. Ayam Geprek</span><b>19×</b></div><hr><div class="row"><span>Pendapatan hari ini</span><b>Rp2.450.000</b></div><div class="row"><span>Total pesanan</span><b>87 pesanan</b></div></div>
+      </div>
+    </section>
+
+    <!-- PESANAN / KANBAN -->
+    <section id="admin-orders" class="admin-page">
+      <div class="panel"><div class="panel-head"><h3>Dashboard Status Pesanan</h3><span class="muted">Baru → Diproses → Siap → Diantar → Selesai</span></div>
+      <div class="kanban">
+        <div class="kanban-col"><h4>🟠 PESANAN BARU</h4><div id="colNew" class="kanban-list"></div></div>
+        <div class="kanban-col"><h4>🔵 DIPROSES</h4><div id="colProcess" class="kanban-list"></div></div>
+        <div class="kanban-col"><h4>🟡 SIAP</h4><div id="colReady" class="kanban-list"></div></div>
+        <div class="kanban-col"><h4>🟣 DIANTAR</h4><div id="colDeliver" class="kanban-list"></div></div>
+        <div class="kanban-col"><h4>🟢 SELESAI</h4><div id="colDone" class="kanban-list"></div></div>
+      </div></div>
+    </section>
+
+    <!-- MENU MANAGEMENT -->
+    <section id="admin-menu" class="admin-page">
+      <div class="admin-grid">
+        <div class="panel"><div class="panel-head"><h3>Daftar Menu</h3><span class="muted">Aktif / nonaktif untuk pelanggan</span></div><div class="table-wrap"><table><thead><tr><th>Menu</th><th>Kategori</th><th>Harga</th><th>Status</th><th></th></tr></thead><tbody id="menuTableBody"></tbody></table></div></div>
+        <form class="panel" onsubmit="return addMenu(event)"><h3>Tambah Menu</h3><label>Nama menu<input id="newMenuName" required placeholder="cth. Roti Bakar Keju" /></label><label>Harga (Rp)<input id="newMenuPrice" required type="number" min="1000" placeholder="20000" /></label><label>Kategori<select id="newMenuCat"><option>Makanan</option><option>Minuman</option><option>Snack</option><option>Dessert</option><option>Promo</option></select></label><button type="submit" class="btn btn-primary btn-block">+ Tambah Menu</button></form>
+      </div>
+    </section>
+
+    <!-- PAYMENT MANAGEMENT -->
+    <section id="admin-payment" class="admin-page">
+      <div class="panel"><div class="panel-head"><h3>Payment Management</h3><span class="muted">Status: Menunggu · Diproses · Berhasil · Gagal</span></div>
+      <div class="chips" id="payFilterChips"><button type="button" class="chip active" data-payfilter="Semua" onclick="filterPayments('Semua', this)">Semua</button><button type="button" class="chip" data-payfilter="Menunggu" onclick="filterPayments('Menunggu', this)">Menunggu</button><button type="button" class="chip" data-payfilter="Diproses" onclick="filterPayments('Diproses', this)">Diproses</button><button type="button" class="chip" data-payfilter="Berhasil" onclick="filterPayments('Berhasil', this)">Berhasil</button><button type="button" class="chip" data-payfilter="Gagal" onclick="filterPayments('Gagal', this)">Gagal</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Transaksi</th><th>Meja</th><th>Metode</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="payTableBody"></tbody></table></div></div>
+    </section>
+
+    <!-- LAPORAN -->
+    <section id="admin-report" class="admin-page">
+      <div class="panel">
+        <div class="panel-head"><h3>Laporan Transaksi</h3><div class="report-filters"><select id="reportFilter" onchange="renderReport()"><option value="today">Hari ini</option><option value="week">Minggu ini</option><option value="month">Bulan ini</option><option value="custom">Custom tanggal</option></select><button type="button" class="btn btn-primary btn-sm" onclick="exportReport()">⬇ Export Laporan</button></div></div>
+        <div class="stat-grid report-stats"><div class="stat-card"><small>Pendapatan Hari Ini</small><b id="repIncome">Rp2.450.000</b></div><div class="stat-card"><small>Total Pesanan</small><b id="repOrders">87 Pesanan</b></div><div class="stat-card"><small>Menu Terlaris</small><b class="small-stat">Nasi Goreng Spesial</b><span>32 pesanan</span></div><div class="stat-card"><small>Rata-rata / Pesanan</small><b>Rp28.160</b></div></div>
+        <h4>Pendapatan 7 hari terakhir</h4><div id="chartBars" class="chart-bars"></div>
+        <div class="table-wrap"><table><thead><tr><th>Waktu</th><th>Pesanan</th><th>Pendapatan</th><th>Tunai</th><th>Digital</th></tr></thead><tbody><tr><td>Hari ini</td><td>87</td><td>Rp2.450.000</td><td>Rp980.000</td><td>Rp1.470.000</td></tr><tr><td>Kemarin</td><td>74</td><td>Rp2.010.000</td><td>Rp810.000</td><td>Rp1.200.000</td></tr><tr><td>2 hari lalu</td><td>69</td><td>Rp1.870.000</td><td>Rp720.000</td><td>Rp1.150.000</td></tr></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- MEMBERSHIP MANAGEMENT -->
+    <section id="admin-member" class="admin-page">
+      <div class="panel"><div class="panel-head"><h3>Membership Management</h3><input type="search" placeholder="Cari member…" oninput="renderMembers(this.value)" /></div>
+      <div class="table-wrap"><table><thead><tr><th>Member</th><th>Level</th><th>Poin</th><th>Transaksi</th><th>Reward</th><th>Status</th></tr></thead><tbody id="memberTableBody"></tbody></table></div></div>
+    </section>
+
+    <!-- AI MANAGEMENT -->
+    <section id="admin-ai" class="admin-page">
+      <div class="admin-grid">
+        <div class="panel"><h3>Sumber Pengetahuan AI</h3><label class="toggle-row"><span>Informasi menu &amp; harga</span><input type="checkbox" checked /></label><label class="toggle-row"><span>Jam operasional</span><input type="checkbox" checked /></label><label class="toggle-row"><span>Promo &amp; voucher</span><input type="checkbox" checked /></label><label class="toggle-row"><span>Info cafe &amp; lokasi</span><input type="checkbox" checked /></label><label class="toggle-row"><span>Kebijakan pembayaran</span><input type="checkbox" checked /></label><button type="button" class="btn btn-primary btn-block" onclick="toast('Pengaturan AI disimpan ✅')">Simpan Pengaturan AI</button></div>
+        <div class="panel"><h3>Pertanyaan Pelanggan Terbaru</h3><div class="ai-q"><b>“Menu pedas apa saja?”</b><small>AI menjawab: Ayam Geprek, Mie Pedas Manis · 10.42</small></div><div class="ai-q"><b>“Bisa bayar QRIS?”</b><small>AI menjawab: Ya, QRIS, E-Wallet, Transfer, Tunai · 10.35</small></div><div class="ai-q"><b>“Pesanan saya di mana?”</b><small>AI menjawab status dari sistem pesanan · 10.18</small></div><h4>Tambah FAQ</h4><form onsubmit="return addFAQ(event)"><input id="faqInput" placeholder="cth. Apakah ada Wi-Fi?" /><button type="submit" class="btn btn-outline btn-block">+ Tambah FAQ</button></form></div>
+      </div>
+    </section>
+
+    <!-- PENGATURAN -->
+    <section id="admin-settings" class="admin-page">
+      <form class="panel settings-form" onsubmit="return saveSettings(event)"><h3>Pengaturan Cafe</h3>
+        <label>Nama cafe<input value="Muga Coffee" /></label>
+        <label>Jam operasional<input value="Sen–Jum 09.00–22.00 · Sab–Min 08.00–23.00" /></label>
+        <div class="grid-2"><label>Biaya layanan (% Q)<input type="number" value="5" /></label><label>Pajak (% )<input type="number" value="10" /></label></div>
+        <label>Deskripsi cafe<textarea rows="3">Cafe modern minimalis dengan pemesanan QR Code, tanpa login.</textarea></label>
+        <label class="toggle-row"><span>Notifikasi pesanan baru ke kasir</span><input type="checkbox" checked /></label>
+        <label class="toggle-row"><span>AI Customer Service aktif</span><input type="checkbox" checked /></label>
+        <button type="submit" class="btn btn-primary btn-lg">Simpan Pengaturan</button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- Detail pesanan kasir modal -->
+<div id="adminOrderModal" class="modal-overlay" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="row"><h3 id="admOrderTitle">Pesanan #0012</h3><button type="button" class="icon-btn small" onclick="document.getElementById('adminOrderModal').hidden=true">✕</button></div>
+    <p><b>MEJA <span id="admOrderMeja">12</span></b> · <span id="admOrderStatus" class="badge badge-wait">Pesanan Baru</span></p>
+    <div id="admOrderItems"></div><div class="row total"><span>Total</span><b id="admOrderTotal">Rp0</b></div>
+    <div class="btn-row"><button type="button" class="btn btn-outline" onclick="document.getElementById('adminOrderModal').hidden=true">Tutup</button><button type="button" id="admAdvanceBtn" class="btn btn-primary" onclick="advanceAdminOrder()">Proses Pesanan →</button></div>
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
